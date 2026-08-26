@@ -1,0 +1,14 @@
+============================================================
+  TAILORED RESUME: Soumyadeep Nath
+  Target: Google DeepMind — Research Engineer
+  Contact: soumyadeepnath@example.com | +1 (555) 019-2834
+  Portfolio: https://github.com/sdn9300
+============================================================
+
+Soumyadeep Nath — AI Engineer & Full Stack Developer
+Experience: Building agentic workflows, LangGraph orchestration, LLM pipelines.
+Skills: Python, TypeScript, LangGraph, FastAPI, React, PyTorch, Docker, Kubernetes.
+
+[Targeted Optimization for Research Engineer @ Google DeepMind]
+- Demonstrated expertise matching requirements: Python, Langgraph
+- Aligned project experience with Google DeepMind's tech stack and engineering objectives.

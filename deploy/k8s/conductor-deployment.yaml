@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conductor-daemon-deployment
+  namespace: default
+  labels:
+    app: conductor-agent
+    role: daemon
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: conductor-agent
+      role: daemon
+  template:
+    metadata:
+      labels:
+        app: conductor-agent
+        role: daemon
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8001"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: conductor
+          image: conductor-agent:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "-m", "conductor.cli", "daemon", "--interval-seconds", "3600"]
+          ports:
+            - containerPort: 8001
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: conductor-config
+          volumeMounts:
+            - name: conductor-storage
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: conductor-storage
+          persistentVolumeClaim:
+            claimName: conductor-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conductor-metrics-service
+  namespace: default
+  labels:
+    app: conductor-agent
+spec:
+  type: ClusterIP
+  selector:
+    app: conductor-agent
+    role: daemon
+  ports:
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP

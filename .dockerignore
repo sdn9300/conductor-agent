@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov
+.git
+.gitignore
+.env
+.venv
+venv
+data/*.db
+data/*.json
+data/pdf_resumes/*
+artifacts/
+.DS_Store

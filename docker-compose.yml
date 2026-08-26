@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  conductor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: conductor-agent
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - CANDIDATE_ID=sdn9300
+      - CANDIDATE_NAME=Soumyadeep Nath
+      - CANDIDATE_EMAIL=soumyadeepnath@example.com
+      - STORAGE_TYPE=sqlite
+      - SQLITE_DB_PATH=/app/data/conductor_memory.db
+      - PDF_OUTPUT_DIR=/app/data/pdf_resumes
+      - DRY_RUN=true
+      - AUTO_APPROVE=true
+      - METRICS_ENABLED=true
+      - PROMETHEUS_PORT=8001
+    volumes:
+      - conductor-data:/app/data
+    networks:
+      - conductor-net
+    command: ["daemon", "--interval-seconds", "3600", "--role", "AI Engineer"]
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: conductor-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - conductor-net
+    depends_on:
+      - conductor
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: conductor-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=conductor
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    networks:
+      - conductor-net
+    depends_on:
+      - prometheus
+
+networks:
+  conductor-net:
+    driver: bridge
+
+volumes:
+  conductor-data:
+  prometheus-data:
+  grafana-data:

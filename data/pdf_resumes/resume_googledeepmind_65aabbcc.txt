@@ -1,0 +1,28 @@
+============================================================
+  TAILORED RESUME: Soumyadeep Nath
+  Target: Google DeepMind — Staff AI Engineer
+  Contact: soumyadeepnath@example.com | +1 (555) 019-2834
+  Portfolio: https://github.com/sdn9300
+============================================================
+
+Soumyadeep Nath
+AI & Agentic Systems Engineer | Full Stack Developer
+Email: soumyadeepnath@example.com | Location: Remote / Hybrid
+
+SUMMARY:
+Results-driven AI Engineer with hands-on experience designing and implementing multi-agent workflows, LLM orchestration pipelines (LangGraph, LangChain, MCP), and resilient backend architectures in Python and TypeScript.
+
+TECHNICAL SKILLS:
+- Languages: Python, TypeScript, JavaScript, SQL, Bash
+- AI / LLM Frameworks: LangGraph, LangChain, Model Context Protocol (MCP), Groq API, OpenAI API, HuggingFace
+- Backend & Cloud: FastAPI, Next.js, SQLite, PostgreSQL, Docker, Kubernetes, Prometheus, Linux
+- Core Competencies: Multi-Agent Coordination, Prompt Engineering, Evaluation & Failure Injection, State Management
+
+PROJECT HIGHLIGHTS:
+- Conductor Agent: Orchestrated 10-component AI-Native Job Agent system with LangGraph state machines, human-in-the-loop review gates, and zero-silent-drop persistence.
+- AlignResume: Next.js + LLM application performing real-time resume tailoring and ATS gap analysis against complex job descriptions.
+- Overture: Production-hardened cold outreach automation bot with email generation, Gmail API integration, and Prometheus telemetry.
+
+[Targeted Optimization for Staff AI Engineer @ Google DeepMind]
+- Demonstrated expertise matching requirements: Llm
+- Aligned project experience with Google DeepMind's tech stack and engineering objectives.

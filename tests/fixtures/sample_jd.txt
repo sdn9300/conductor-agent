@@ -1,0 +1,13 @@
+We are seeking a Senior AI Engineer to join our autonomous agents team at AnthroTech Solutions.
+
+Role Responsibilities:
+- Design, build, and deploy agentic AI pipelines and multi-agent coordination systems using LangGraph, Python, and LLM APIs.
+- Architect resilient state management and fault-tolerant execution graphs for background automation workflows.
+- Integrate Model Context Protocol (MCP) servers and external APIs for seamless tool calling.
+- Maintain production observability, error tracking, and latency metrics using Prometheus and Grafana.
+
+Requirements:
+- 3+ years experience with Python, FastAPI, and asynchronous programming.
+- Deep hands-on experience with LangGraph, LangChain, or agentic frameworks.
+- Familiarity with containerization (Docker) and cloud deployments.
+- Strong communication skills and a passion for building reliable AI software.

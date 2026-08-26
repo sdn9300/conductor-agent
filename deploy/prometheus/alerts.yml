@@ -1,0 +1,29 @@
+groups:
+  - name: conductor_alerts
+    rules:
+      - alert: ConductorPipelineHighErrorRate
+        expr: rate(conductor_node_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High pipeline error rate in Conductor node: {{ $labels.node }}"
+          description: "Conductor node {{ $labels.node }} is failing at a rate of {{ $value }} errors per second."
+
+      - alert: ConductorNodeLatencyHigh
+        expr: histogram_quantile(0.95, sum(rate(conductor_node_duration_seconds_bucket[5m])) by (le, node)) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Conductor node latency high on {{ $labels.node }}"
+          description: "95th percentile latency for node {{ $labels.node }} exceeded 30 seconds."
+
+      - alert: ConductorHumanGateHighRejectionRate
+        expr: sum(rate(conductor_human_gate_actions_total{action="reject"}[1h])) / sum(rate(conductor_human_gate_actions_total[1h])) > 0.5
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High human gate rejection rate detected"
+          description: "Over 50% of tailored resumes/outreach drafts were rejected by the candidate during the last hour."

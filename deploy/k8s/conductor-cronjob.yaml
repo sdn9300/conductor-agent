@@ -1,0 +1,91 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: conductor-daily-harvest
+  namespace: default
+  labels:
+    app: conductor-agent
+    role: scheduled-harvest
+spec:
+  schedule: "0 9 * * 1-5"  # Every weekday at 09:00 UTC
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: conductor-agent
+            role: scheduled-harvest
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: conductor-harvest-runner
+              image: conductor-agent:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - "python"
+                - "-m"
+                - "conductor.cli"
+                - "harvest"
+                - "--role"
+                - "AI Engineer"
+                - "--location"
+                - "Remote"
+                - "--limit"
+                - "10"
+                - "--dry-run"
+                - "--auto-approve"
+              envFrom:
+                - configMapRef:
+                    name: conductor-config
+              volumeMounts:
+                - name: conductor-storage
+                  mountPath: /app/data
+          volumes:
+            - name: conductor-storage
+              persistentVolumeClaim:
+                claimName: conductor-data-pvc
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: conductor-weekly-baseline
+  namespace: default
+  labels:
+    app: conductor-agent
+    role: scheduled-baseline
+spec:
+  schedule: "0 0 * * 0"  # Every Sunday at midnight UTC
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: conductor-agent
+            role: scheduled-baseline
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: conductor-baseline-runner
+              image: conductor-agent:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - "python"
+                - "-m"
+                - "conductor.cli"
+                - "baseline"
+                - "--role"
+                - "AI Engineer"
+              envFrom:
+                - configMapRef:
+                    name: conductor-config
+              volumeMounts:
+                - name: conductor-storage
+                  mountPath: /app/data
+          volumes:
+            - name: conductor-storage
+              persistentVolumeClaim:
+                claimName: conductor-data-pvc

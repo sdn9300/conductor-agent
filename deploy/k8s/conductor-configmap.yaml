@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conductor-config
+  namespace: default
+  labels:
+    app: conductor-agent
+data:
+  CANDIDATE_ID: "sdn9300"
+  CANDIDATE_NAME: "Soumyadeep Nath"
+  CANDIDATE_EMAIL: "soumyadeepnath@example.com"
+  STORAGE_TYPE: "sqlite"
+  SQLITE_DB_PATH: "/app/data/conductor_memory.db"
+  PDF_OUTPUT_DIR: "/app/data/pdf_resumes"
+  METRICS_ENABLED: "true"
+  PROMETHEUS_PORT: "8001"
+  DRY_RUN: "true"
+  AUTO_APPROVE: "true"
+  HARVESTER_DEFAULT_ROLE: "AI Engineer"
+  HARVESTER_DEFAULT_LOCATION: "Remote"
+  HARVESTER_MAX_LIMIT: "10"
+  COOLDOWN_DAYS: "30"
