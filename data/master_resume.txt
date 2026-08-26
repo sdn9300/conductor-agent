@@ -1,17 +1,31 @@
 Soumyadeep Nath
 AI & Agentic Systems Engineer | Full Stack Developer
-Email: soumyadeepnath@example.com | Location: Remote / Hybrid
+Email: soumyadeepnath@example.com | Location: Remote / Hybrid | GitHub: https://github.com/sdn9300
 
 SUMMARY:
-Results-driven AI Engineer with hands-on experience designing and implementing multi-agent workflows, LLM orchestration pipelines (LangGraph, LangChain, MCP), and resilient backend architectures in Python and TypeScript.
+Results-driven AI & Systems Engineer with hands-on experience designing and deploying autonomous multi-agent workflows, stateful LLM orchestration graphs (LangGraph, Pydantic v2), and resilient backend architectures in Python, TypeScript, and Docker/Kubernetes.
 
 TECHNICAL SKILLS:
-- Languages: Python, TypeScript, JavaScript, SQL, Bash
-- AI / LLM Frameworks: LangGraph, LangChain, Model Context Protocol (MCP), Groq API, OpenAI API, HuggingFace
-- Backend & Cloud: FastAPI, Next.js, SQLite, PostgreSQL, Docker, Kubernetes, Prometheus, Linux
-- Core Competencies: Multi-Agent Coordination, Prompt Engineering, Evaluation & Failure Injection, State Management
+- Languages: Python (3.10+), TypeScript, JavaScript, SQL, Bash, R
+- AI / LLM Orchestration: LangGraph (StateGraph), LangChain, Groq API (LLaMA 3.3 70B), Pydantic v2, Prompt Engineering, Evaluation & Failure Injection
+- Backend & Cloud: FastAPI, Next.js, SQLite, PostgreSQL, Redis, Docker (Multi-stage), Kubernetes (Deployments, CronJobs, PVCs), Prometheus, Grafana, Linux
+- Core Competencies: Multi-Agent State Machines, Human-in-the-Loop Guardrails, Resilient Deduplication & Cooldown Feedback Loops, Zero-Silent-Drop Persistence
 
 PROJECT HIGHLIGHTS:
-- Conductor Agent: Orchestrated 10-component AI-Native Job Agent system with LangGraph state machines, human-in-the-loop review gates, and zero-silent-drop persistence.
-- AlignResume: Next.js + LLM application performing real-time resume tailoring and ATS gap analysis against complex job descriptions.
-- Overture: Production-hardened cold outreach automation bot with email generation, Gmail API integration, and Prometheus telemetry.
+- Conductor Agent (Lead Architect & Developer):
+  * Engineered the central LangGraph state machine coordinating a 10-component AI-Native Job Search system across multi-board scraping, company research, resume tailoring, and multi-channel dispatch.
+  * Enforced an ADR-6 structural Human-in-the-Loop approval gate ensuring zero unreviewed outbound communication or form submission.
+  * Implemented an automated deduplication engine and 30-day rejection cooldown feedback loop, slashing redundant LLM API overhead and protecting candidate reputation.
+  * Hardened with multi-stage Docker containerization, Kubernetes Deployments/CronJobs, real-time Prometheus (:8001/metrics) telemetry, Grafana dashboards, and 47 passing unit/integration tests.
+  * GitHub: https://github.com/sdn9300/conductor-agent
+
+- AlignResume (AI-Powered Resume Optimization Platform):
+  * Architected an end-to-end full-stack AI web app in Next.js & TypeScript executing real-time resume tailoring and ATS gap analysis against job descriptions.
+  * Deployed a truthfulness guardrail layer using Zod and Groq API (LLaMA 3.3 70B) to eliminate LLM hallucinations.
+  * Deployed Playwright headless PDF generation and IP-based rate limiting on Vercel.
+  * Live App: https://align-resume-beta.vercel.app/ | GitHub: https://github.com/sdn9300/align-resume
+
+- Overture (Smart Cold Email Outreach Platform):
+  * Developed a modular Python + Next.js cold outreach bot featuring dual-stage prompt formatting and tone polishing.
+  * Secured OAuth2 Gmail API integration, asynchronous Redis queueing, and Prometheus runtime telemetry.
+  * Live App: https://frontend-three-azure-97.vercel.app/ | GitHub: https://github.com/sdn9300/Overture-Outreach
