@@ -32,6 +32,7 @@ class ConductorConfig:
 
         # Storage
         self.STORAGE_TYPE: str = os.getenv("STORAGE_TYPE", "sqlite")  # "sqlite" or "json"
+        self.MEMORY_BACKEND: str = os.getenv("MEMORY_BACKEND", "event_sourced")  # "event_sourced" or "legacy"
         self.SQLITE_DB_PATH: str = os.getenv(
             "SQLITE_DB_PATH",
             str(Path(__file__).resolve().parent.parent / "data" / "conductor_memory.db"),
@@ -39,6 +40,14 @@ class ConductorConfig:
         self.JSON_LOG_PATH: str = os.getenv(
             "JSON_LOG_PATH",
             str(Path(__file__).resolve().parent.parent / "data" / "conductor_run_log.json"),
+        )
+        self.MEMORY_MODULE_DIR: str = os.getenv(
+            "MEMORY_MODULE_DIR",
+            str(Path(__file__).resolve().parent.parent.parent / "Memory Module"),
+        )
+        self.MEMORY_MODULE_DB_PATH: str = os.getenv(
+            "MEMORY_MODULE_DB_PATH",
+            str(Path(__file__).resolve().parent.parent / "data" / "memory_module.db"),
         )
 
         # Harvester Adapter (Job Scraping #1)

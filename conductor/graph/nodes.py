@@ -34,6 +34,7 @@ from conductor.state import (
 )
 from conductor.storage.base import MemoryStore
 from conductor.storage.local_store import SQLiteMemoryStore
+from conductor.storage.event_sourced_store import EventSourcedMemoryStore
 
 
 class NodeContext:
@@ -56,7 +57,12 @@ class NodeContext:
         self.overture_adapter = overture_adapter or OvertureAdapter(dry_run=config.DRY_RUN)
         self.auto_apply_adapter = auto_apply_adapter or PDFAutoApplyAdapter(dry_run=config.DRY_RUN)
         self.sentiment_adapter = sentiment_adapter or SentimentClassifierAdapter()
-        self.memory_store = memory_store or SQLiteMemoryStore(config.SQLITE_DB_PATH)
+        if memory_store:
+            self.memory_store = memory_store
+        elif config.MEMORY_BACKEND == "event_sourced":
+            self.memory_store = EventSourcedMemoryStore(config.MEMORY_MODULE_DB_PATH)
+        else:
+            self.memory_store = SQLiteMemoryStore(config.SQLITE_DB_PATH)
         self.human_gate_callback = human_gate_callback
 
 

@@ -19,10 +19,13 @@ from conductor.graph.workflow import build_conductor_graph
 from conductor.metrics import start_conductor_metrics_server
 from conductor.state import ApplicationRecord, ConductorState, PostingRef
 from conductor.storage.local_store import SQLiteMemoryStore, JSONMemoryStore
+from conductor.storage.event_sourced_store import EventSourcedMemoryStore
 
 
 def get_store():
     """Retrieve configured MemoryStore."""
+    if config.MEMORY_BACKEND == "event_sourced":
+        return EventSourcedMemoryStore(config.MEMORY_MODULE_DB_PATH)
     if config.STORAGE_TYPE == "json":
         return JSONMemoryStore(config.JSON_LOG_PATH)
     return SQLiteMemoryStore(config.SQLITE_DB_PATH)
