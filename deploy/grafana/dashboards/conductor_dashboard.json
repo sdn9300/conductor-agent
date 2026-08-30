@@ -329,13 +329,13 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (writer_component) (rate(conductor_candidate_profile_patches_total[5m]))",
-          "legendFormat": "{{writer_component}}",
+          "expr": "sum by (component, status) (rate(candidate_profile_writes_total[5m]))",
+          "legendFormat": "{{component}} - {{status}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Candidate Profile Patch Operations (by component)",
+      "title": "Candidate Profile Writes Rate (candidate_profile_writes_total)",
       "type": "timeseries"
     },
     {
@@ -375,14 +375,14 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(conductor_anti_fabrication_rejections_total)",
-          "legendFormat": "Fabrication Rejections (IG-6)",
+          "expr": "histogram_quantile(0.95, sum by (le, component) (rate(candidate_profile_write_latency_seconds_bucket[5m])))",
+          "legendFormat": "p95 {{component}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Anti-Fabrication Provenance Rejections (IG-6)",
-      "type": "stat"
+      "title": "Profile Write Latency p95 (candidate_profile_write_latency_seconds)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -392,9 +392,16 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 1}
+            ]
+          }
         },
         "overrides": []
       },
@@ -421,14 +428,14 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (subsystem) (conductor_integration_health{subsystem=~\"memory_module|candidate_profile|usher\"})",
-          "legendFormat": "{{subsystem}}",
+          "expr": "sum(candidate_profile_validation_failures_total) + sum(candidate_profile_ownership_violations_total)",
+          "legendFormat": "Validation & Ownership Violations",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Integration Subsystem Health (Memory / Profile / Usher)",
-      "type": "timeseries"
+      "title": "Profile Violations & Failures (MG-1 & MG-4)",
+      "type": "stat"
     }
   ],
   "refresh": "10s",
