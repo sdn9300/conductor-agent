@@ -6,7 +6,7 @@
 [![Prometheus](https://img.shields.io/badge/Prometheus-Port%208001-E6522C.svg?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-CronJobs%20%26%20Deployments-326CE5.svg?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
-[![Tests](https://img.shields.io/badge/Tests-47%20Passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-63%20Passed-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 > **Conductor Agent (#6)** is the central orchestration brain and state coordinator for the **10-Component AI-Native Job Agent Architecture**. Built on **LangGraph**, **Pydantic v2**, and **Prometheus**, Conductor unifies multi-board job discovery, deep company intelligence, resume tailoring, human approval gating, dynamic multi-channel application dispatch, durable memory checkpointing, and sentiment feedback loops into a resilient, production-hardened system.
@@ -113,14 +113,15 @@ All lifecycle milestones, error traces, and state transitions are durably checkp
 | Component | Role in Architecture | Integration Mechanism |
 |---|---|---|
 | **#1 Harvester** | Multi-Board Job Discovery | `HarvesterAdapter` (RemoteOK, Indeed, Wellfound, Naukri) |
-| **#2 AlignResume** | Resume Tailoring & ATS Scoring | `AlignResumeAdapter` (HTTP REST API with deterministic fallback) |
+| **#2 AlignResume** | Resume Tailoring & ATS Scoring | `AlignResumeAdapter` (HTTP REST API with deterministic fallback, provenance-gated via Candidate Profile) |
 | **#3 Overture** | Cold Outreach Automation | `OvertureAdapter` (Email draft generation & Gmail/SMTP dispatch) |
 | **#4 Research Agent** | Company Intelligence Gathering | `ResearchAgentAdapter` (Synthesizes `CompanyBriefRef` tech signals & culture) |
-| **#5 PDF Auto-Apply** | Portal Form Application | `PDFAutoApplyAdapter` (Compiles PDF resume artifacts & form payloads) |
+| **#5/#7 Usher (PDF Auto-Apply)** | Real ATS Portal Form Submission | `PDFAutoApplyAdapter` → `usher.conductor.run_auto_apply_pipeline()` (4-tier field resolution, Playwright browser automation, DRY_RUN→SubmissionMode.DRAFT mapping) |
 | **#6 Conductor** | Coordination & State Machine | LangGraph `StateGraph` + Pydantic v2 `ConductorState` |
-| **#8 Memory Module** | Durable Checkpointing | `SQLiteMemoryStore` & `JSONMemoryStore` |
+| **#8 Memory Module** | Event-Sourced Durable Checkpointing | `EventSourcedMemoryStore` wrapping `memory_module.store.MemoryStore` (deterministic event IDs, domain cooldown registry, ADR-5 idempotency) |
 | **#9 Sentiment Classifier** | Inbound Response Categorization | `SentimentClassifierAdapter` (Macro sentiment, intent, urgency & cooldown) |
-| **#10 Observability** | Telemetry & Health Monitoring | Prometheus Exporter (Port 8001) + Grafana Dashboard |
+| **#10 Candidate Profile** | Canonical Candidate Data Layer | `CandidateProfileAdapter` with `CandidateProfileStore` (anti-fabrication provenance gate IG-6, per-component projections: `to_resume_profile()`, `to_usher_profile()`, `to_gleaner_query()`, `to_outreach_context()`) |
+| **Observability** | Telemetry & Health Monitoring | Prometheus Exporter (Port 8001) + Grafana Dashboard (profile patches, IG-6 rejections, subsystem health) |
 
 ---
 
