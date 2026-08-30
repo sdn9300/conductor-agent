@@ -120,6 +120,17 @@ class ResearchAgentAdapter(AgentAdapter):
             jd_text = posting.get("jd_text") or state_dict.get("jd_text", "")
             role = posting.get("title") or state_dict.get("role", "AI Engineer")
 
+            profile = state_dict.get("profile")
+            if profile is not None:
+                try:
+                    from candidate_profile.projections import to_research_scope
+                    scope = to_research_scope(profile)
+                    # Use technical focus areas and preferred company signals if available
+                    if scope.technical_focus_areas:
+                        role = f"{role} (Focus: {', '.join(scope.technical_focus_areas[:3])})"
+                except Exception as scope_err:
+                    logger.debug("[ResearchAgentAdapter] Research scope projection error: %s", scope_err)
+
             brief = self.research_company(company_name=company, job_description=jd_text, role=role)
 
             return AgentResult(

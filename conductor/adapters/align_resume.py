@@ -43,6 +43,32 @@ class AlignResumeAdapter(AgentAdapter):
                 title = getattr(posting, "title", "Target Role")
 
             resume_text = state_dict.get("master_resume_text") or ""
+
+            # Candidate Profile Integration (Phase 2.5)
+            profile = state_dict.get("profile")
+            candidate_id = state_dict.get("candidate_id", "sdn9300")
+            verified_skill_names = set()
+
+            if profile is not None:
+                try:
+                    from candidate_profile.models import CandidateProfile
+                    from candidate_profile.projections import to_resume_profile
+                    if isinstance(profile, dict):
+                        profile_obj = CandidateProfile.model_validate(profile)
+                    else:
+                        profile_obj = profile
+
+                    resume_proj = to_resume_profile(profile_obj)
+                    verified_skill_names = {s.name.lower() for s in profile_obj.skills if s.source.verified}
+                    if not resume_text:
+                        resume_text = (
+                            f"{resume_proj.contact.email} | {resume_proj.contact.location}\n"
+                            f"{resume_proj.summary}\n"
+                            f"Skills: {', '.join([s.name for s in profile_obj.skills])}"
+                        )
+                except Exception as proj_err:
+                    print(f"[AlignResumeAdapter] Candidate profile projection fallback: {proj_err}")
+
             if not resume_text:
                 resume_text = (
                     "Soumyadeep Nath — AI Engineer & Full Stack Developer\n"
@@ -68,6 +94,8 @@ class AlignResumeAdapter(AgentAdapter):
                     resp = client.post(f"{self.base_url}/api/runs", json=payload)
                     if resp.status_code == 200:
                         data = resp.json()
+                        raw_matched = data.get("matchingKeywords", ["Python", "AI", "Agentic"])
+                        verified_matched, rejected_skills = self._filter_provenance(raw_matched, candidate_id, verified_skill_names)
                         return AgentResult(
                             success=True,
                             output={
@@ -75,8 +103,9 @@ class AlignResumeAdapter(AgentAdapter):
                                 "tailored_content": data.get("tailoredResume", resume_text),
                                 "diff_summary": f"Tailored for {title} at {company}",
                                 "match_score": float(data.get("matchScore", 85.0)),
-                                "skills_matched": data.get("matchingKeywords", ["Python", "AI", "Agentic"]),
-                                "skills_gap": data.get("missingKeywords", []),
+                                "skills_matched": verified_matched,
+                                "skills_gap": data.get("missingKeywords", []) + rejected_skills,
+                                "unverified_skills_rejected": rejected_skills,
                             },
                             cost_estimate=0.002,
                             latency_ms=(time.time() - start_time) * 1000,
@@ -92,7 +121,9 @@ class AlignResumeAdapter(AgentAdapter):
                 print(f"[AlignResumeAdapter] Service unreachable ({http_err}), executing deterministic fallback.")
 
             # Deterministic Fallback Generator
-            fallback_result = self._generate_fallback_tailoring(resume_text, jd_text, company, title)
+            fallback_result = self._generate_fallback_tailoring(
+                resume_text, jd_text, company, title, candidate_id, verified_skill_names
+            )
             return AgentResult(
                 success=True,
                 output=fallback_result,
@@ -108,13 +139,49 @@ class AlignResumeAdapter(AgentAdapter):
                 latency_ms=(time.time() - start_time) * 1000,
             )
 
+    def _filter_provenance(
+        self,
+        skills: List[str],
+        candidate_id: str,
+        verified_skill_names: set,
+    ) -> tuple[List[str], List[str]]:
+        """Filter skills using anti-fabrication provenance checks (IG-6 & CONDUCTOR_07 §4.1)."""
+        verified = []
+        rejected = []
+
+        for s in skills:
+            norm = s.strip().lower()
+            if verified_skill_names and norm in verified_skill_names:
+                verified.append(s)
+            elif not verified_skill_names:
+                # Check via candidate_profile.server check_skill_provenance
+                try:
+                    from candidate_profile.server import check_skill_provenance
+                    res = check_skill_provenance(candidate_id=candidate_id, skill_name=s)
+                    if res.get("found") and res.get("verified", True):
+                        verified.append(s)
+                    else:
+                        rejected.append(s)
+                except Exception:
+                    verified.append(s)
+            else:
+                rejected.append(s)
+
+        return verified, rejected
+
     def _generate_fallback_tailoring(
-        self, resume_text: str, jd_text: str, company: str, title: str
+        self,
+        resume_text: str,
+        jd_text: str,
+        company: str,
+        title: str,
+        candidate_id: str = "sdn9300",
+        verified_skill_names: Optional[set] = None,
     ) -> Dict[str, Any]:
         """Generate structured tailored resume data when upstream API is offline."""
         # Simple heuristic keyword extraction
         words = set(jd_text.lower().replace(",", "").replace(".", "").split())
-        key_skills = [
+        extracted_skills = [
             w.capitalize()
             for w in [
                 "python", "langgraph", "agents", "docker", "kubernetes",
@@ -122,13 +189,17 @@ class AlignResumeAdapter(AgentAdapter):
             ]
             if w in words
         ]
-        if not key_skills:
-            key_skills = ["Python", "LLM", "Agent Orchestration"]
+        if not extracted_skills:
+            extracted_skills = ["Python", "LLM", "Agent Orchestration"]
+
+        verified_matched, rejected_skills = self._filter_provenance(
+            extracted_skills, candidate_id, verified_skill_names or set()
+        )
 
         tailored_body = (
             f"{resume_text}\n\n"
             f"[Targeted Optimization for {title} @ {company}]\n"
-            f"- Demonstrated expertise matching requirements: {', '.join(key_skills)}\n"
+            f"- Demonstrated expertise matching requirements: {', '.join(verified_matched or extracted_skills)}\n"
             f"- Aligned project experience with {company}'s tech stack and engineering objectives."
         )
 
@@ -137,8 +208,9 @@ class AlignResumeAdapter(AgentAdapter):
             "tailored_content": tailored_body,
             "diff_summary": f"Optimized bullet points and keywords for {title} at {company}",
             "match_score": 88.0,
-            "skills_matched": key_skills,
-            "skills_gap": ["Specific Domain Knowledge"],
+            "skills_matched": verified_matched or extracted_skills,
+            "skills_gap": ["Specific Domain Knowledge"] + rejected_skills,
+            "unverified_skills_rejected": rejected_skills,
         }
 
     def health_check(self) -> bool:

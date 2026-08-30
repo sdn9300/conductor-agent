@@ -41,6 +41,21 @@ conductor_human_gate_actions_total = Counter(
     ["action"],  # "approve", "edit", "reject", "abort"
 )
 
+# Import Candidate Profile (#10) metrics to register with default Prometheus registry (Phase 2.8)
+try:
+    from candidate_profile.observability import (
+        CANDIDATE_PROFILE_WRITES_TOTAL,
+        CANDIDATE_PROFILE_VALIDATION_FAILURES_TOTAL,
+        CANDIDATE_PROFILE_SCHEMA_VERSION_GAUGE,
+        CANDIDATE_PROFILE_WRITE_LATENCY_SECONDS,
+        CANDIDATE_PROFILE_OWNERSHIP_VIOLATIONS_TOTAL,
+        record_profile_write,
+        record_validation_failure,
+        record_ownership_violation,
+    )
+except ImportError:
+    pass
+
 
 def start_conductor_metrics_server(port: int = 8001) -> bool:
     """Start Prometheus HTTP metrics exporter server if not already running."""

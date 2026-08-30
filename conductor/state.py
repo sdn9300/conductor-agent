@@ -153,14 +153,19 @@ class CandidateProfile(BaseModel):
     updated_at: str = Field(default_factory=get_utc_now_iso)
 
 
+from candidate_profile.models import CandidateProfile as CanonicalCandidateProfile
+
+
 class ConductorState(BaseModel):
     """
     State object passed between LangGraph nodes during a single job execution run.
     Encapsulates one ApplicationRecord plus run-scoped execution trace and error logs.
+    Includes canonical CandidateProfile (#10) data layer.
     """
     candidate_id: str = "sdn9300"
     job_id: str
     application: ApplicationRecord
+    profile: Optional[CanonicalCandidateProfile] = None
     master_resume_text: str = ""
     target_channel: Literal["auto", "email", "form"] = "auto"
     current_node: str = "entry"

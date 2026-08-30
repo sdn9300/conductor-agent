@@ -1,3 +1,8 @@
+# [DEPRECATED - ADR-9]
+# This flat-text master resume is deprecated in favor of Component #10: Candidate Profile JSON
+# (conductor-candidate-profile). Canonical source of truth is now CandidateProfileStore.
+# Preserved for backward compatibility and fallback only.
+
 Soumyadeep Nath
 AI & Agentic Systems Engineer | Full Stack Developer
 Email: soumyadeepnath@example.com | Location: Remote / Hybrid | GitHub: https://github.com/sdn9300

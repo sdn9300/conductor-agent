@@ -32,6 +32,7 @@ from conductor.state import (
     SentimentSignal,
     TailoredResumeRef,
 )
+from conductor.adapters.candidate_profile import CandidateProfileAdapter
 from conductor.storage.base import MemoryStore
 from conductor.storage.local_store import SQLiteMemoryStore
 from conductor.storage.event_sourced_store import EventSourcedMemoryStore
@@ -48,6 +49,7 @@ class NodeContext:
         overture_adapter: Optional[OvertureAdapter] = None,
         auto_apply_adapter: Optional[PDFAutoApplyAdapter] = None,
         sentiment_adapter: Optional[SentimentClassifierAdapter] = None,
+        candidate_profile_adapter: Optional[CandidateProfileAdapter] = None,
         memory_store: Optional[MemoryStore] = None,
         human_gate_callback: Optional[Callable[[ConductorState], str]] = None,
     ):
@@ -57,6 +59,7 @@ class NodeContext:
         self.overture_adapter = overture_adapter or OvertureAdapter(dry_run=config.DRY_RUN)
         self.auto_apply_adapter = auto_apply_adapter or PDFAutoApplyAdapter(dry_run=config.DRY_RUN)
         self.sentiment_adapter = sentiment_adapter or SentimentClassifierAdapter()
+        self.candidate_profile_adapter = candidate_profile_adapter or CandidateProfileAdapter()
         if memory_store:
             self.memory_store = memory_store
         elif config.MEMORY_BACKEND == "event_sourced":
@@ -70,10 +73,15 @@ def discover_node(state: ConductorState, context: NodeContext) -> ConductorState
     """
     Ingest opportunity via Harvester, validate schema, check deduplication (EC-06),
     and check company cooldown suppression (EC-07 / Task 3.3).
+    Populates canonical CandidateProfile (#10).
     """
     start = time.time()
     state.record_node("discover")
     try:
+        # 0. Populate canonical CandidateProfile if not already loaded (Phase 2)
+        if state.profile is None and context.candidate_profile_adapter:
+            state.profile = context.candidate_profile_adapter.get_profile(state.candidate_id)
+
         res = context.harvester_adapter.invoke(state.model_dump())
         if not res.success:
             state.record_error(res.error or "Harvester discovery failed.")
@@ -190,6 +198,31 @@ def tailor_node(state: ConductorState, context: NodeContext) -> ConductorState:
                 skills_gap=out.get("skills_gap", []),
             )
             state.application.status = "outreach_pending_review"
+
+            # Emit CandidateProfilePatch (Phase 2.7)
+            if state.profile and context.candidate_profile_adapter:
+                try:
+                    from candidate_profile.concurrency import CandidateProfilePatch, merge_candidate_profile
+                    from candidate_profile.models import HistoryRef
+                    from datetime import datetime, timezone
+                    history_ref = HistoryRef(
+                        run_id=out.get("run_id") or f"align_{state.job_id[:8]}",
+                        component="align_resume",
+                        timestamp=datetime.now(timezone.utc),
+                        outcome="success",
+                        score=float(out.get("match_score", 85.0)),
+                        detail_ref=f"tailored_resumes/{state.job_id}",
+                    )
+                    patch = CandidateProfilePatch(
+                        writer_component="align_resume",
+                        section="tailoring_history",
+                        value=history_ref,
+                    )
+                    state.profile = merge_candidate_profile(state.profile, patch)
+                    context.candidate_profile_adapter.save_profile(state.profile, writer_component="align_resume")
+                except Exception as patch_err:
+                    print(f"[Conductor tailor_node] CandidateProfile patch error: {patch_err}")
+
             if res.cost_estimate:
                 conductor_token_cost_total.labels(component="align_resume").inc(res.cost_estimate)
     except Exception as e:
@@ -302,6 +335,30 @@ def outreach_node(state: ConductorState, context: NodeContext) -> ConductorState
             )
             state.application.status = "outreach_sent"
 
+            # Emit CandidateProfilePatch (Phase 2.7)
+            if state.profile and context.candidate_profile_adapter:
+                try:
+                    from candidate_profile.concurrency import CandidateProfilePatch, merge_candidate_profile
+                    from candidate_profile.models import HistoryRef
+                    from datetime import datetime, timezone
+                    history_ref = HistoryRef(
+                        run_id=out.get("message_id") or f"overture_{state.job_id[:8]}",
+                        component="overture",
+                        timestamp=datetime.now(timezone.utc),
+                        outcome="sent" if not out.get("error") else "failed",
+                        score=float(out.get("personalization_score", 3.0)),
+                        detail_ref=f"outreach_drafts/{state.job_id}",
+                    )
+                    patch = CandidateProfilePatch(
+                        writer_component="overture",
+                        section="outreach_history",
+                        value=history_ref,
+                    )
+                    state.profile = merge_candidate_profile(state.profile, patch)
+                    context.candidate_profile_adapter.save_profile(state.profile, writer_component="overture")
+                except Exception as patch_err:
+                    print(f"[Conductor outreach_node] CandidateProfile patch error: {patch_err}")
+
     except Exception as e:
         state.record_error(f"outreach_node unexpected exception: {str(e)}")
         conductor_node_errors_total.labels(node="outreach").inc()
@@ -334,6 +391,30 @@ def auto_apply_node(state: ConductorState, context: NodeContext) -> ConductorSta
             auto_data = out.get("auto_apply", {})
             state.application.auto_apply = AutoApplyRef.model_validate(auto_data)
             state.application.status = "auto_applied"
+
+            # Emit CandidateProfilePatch (Phase 2.7)
+            if state.profile and context.candidate_profile_adapter:
+                try:
+                    from candidate_profile.concurrency import CandidateProfilePatch, merge_candidate_profile
+                    from candidate_profile.models import HistoryRef
+                    from datetime import datetime, timezone
+                    history_ref = HistoryRef(
+                        run_id=auto_data.get("submission_id") or f"usher_{state.job_id[:8]}",
+                        component="usher",
+                        timestamp=datetime.now(timezone.utc),
+                        outcome="submitted",
+                        score=1.0,
+                        detail_ref=f"applications/{state.job_id}",
+                    )
+                    patch = CandidateProfilePatch(
+                        writer_component="usher",
+                        section="application_history",
+                        value=history_ref,
+                    )
+                    state.profile = merge_candidate_profile(state.profile, patch)
+                    context.candidate_profile_adapter.save_profile(state.profile, writer_component="usher")
+                except Exception as patch_err:
+                    print(f"[Conductor auto_apply_node] CandidateProfile patch error: {patch_err}")
 
     except Exception as e:
         state.record_error(f"auto_apply_node unexpected exception: {str(e)}")
