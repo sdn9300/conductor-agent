@@ -1,5 +1,5 @@
 """
-Unit tests for PDFAutoApplyAdapter (Phase 4).
+Unit tests for PDFAutoApplyAdapter (Phase 4, updated for Phase 3 Usher Integration).
 Verifies application artifact compilation, form field extraction, and submission handling.
 """
 
@@ -12,35 +12,27 @@ from conductor.state import AutoApplyRef
 
 
 def test_auto_apply_adapter_compilation():
-    """PDFAutoApplyAdapter writes formatted resume artifact and populates form fields."""
+    """PDFAutoApplyAdapter writes formatted resume artifact via internal compile method."""
     temp_dir = tempfile.mkdtemp()
     try:
         adapter = PDFAutoApplyAdapter(output_dir=temp_dir, dry_run=True)
         assert adapter.name == "pdf_auto_apply"
         assert adapter.health_check() is True
 
+        # Test the internal compile method (renamed from public to private in Phase 3)
         resume_text = "Experienced AI Systems Engineer with deep expertise in LangGraph and Python backend architectures."
-        res = adapter.submit_application(
+        artifact_path = adapter._compile_resume_artifact(
             job_id="test_job_12345",
             company="OpenAI",
             role="Research Systems Engineer",
-            portal_url="https://openai.com/careers/apply/123",
             resume_content=resume_text,
         )
 
-        assert isinstance(res, AutoApplyRef)
-        assert res.mode == "dry_run"
-        assert res.status == "dry_run"
-        assert res.portal_url == "https://openai.com/careers/apply/123"
-        assert res.pdf_resume_path is not None
-        assert Path(res.pdf_resume_path).exists()
-
-        # Check field mappings
-        fields = res.fields_submitted
-        assert fields["company"] == "OpenAI"
-        assert fields["role"] == "Research Systems Engineer"
-        assert "Soumyadeep Nath" in fields["full_name"]
-        assert "@" in fields["email"]
+        assert artifact_path.exists()
+        content = artifact_path.read_text(encoding="utf-8")
+        assert "TAILORED RESUME" in content
+        assert "OpenAI" in content
+        assert resume_text in content
 
     finally:
         for f in Path(temp_dir).glob("*"):
@@ -55,10 +47,13 @@ def test_auto_apply_adapter_compilation():
 
 
 def test_auto_apply_adapter_invoke():
-    """Adapter.invoke handles state dictionaries and returns AgentResult."""
+    """Adapter.invoke handles state dictionaries and returns AgentResult with form payload."""
     temp_dir = tempfile.mkdtemp()
     try:
         adapter = PDFAutoApplyAdapter(output_dir=temp_dir, dry_run=True)
+        # Force fallback mode for deterministic test behavior
+        adapter.use_usher = False
+
         state_dict = {
             "job_id": "test_invoke_999",
             "application": {
@@ -66,6 +61,7 @@ def test_auto_apply_adapter_invoke():
                     "company": "Scale AI",
                     "title": "Staff AI Engineer",
                     "url": "https://scale.com/careers/999",
+                    "jd_text": "Build scalable AI infrastructure with Python and distributed systems.",
                 },
                 "tailored_resume": {
                     "tailored_content": "Tailored resume content for Scale AI.",
@@ -76,7 +72,11 @@ def test_auto_apply_adapter_invoke():
         assert res.success is True
         assert res.output is not None
         assert "auto_apply" in res.output
-        assert res.output["auto_apply"]["fields_submitted"]["company"] == "Scale AI"
+
+        fields = res.output["auto_apply"]["fields_submitted"]
+        assert fields["company"] == "Scale AI"
+        assert fields["role"] == "Staff AI Engineer"
+        assert "Soumyadeep Nath" in fields["full_name"]
     finally:
         for f in Path(temp_dir).glob("*"):
             try:

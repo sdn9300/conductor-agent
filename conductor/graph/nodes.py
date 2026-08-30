@@ -398,11 +398,12 @@ def auto_apply_node(state: ConductorState, context: NodeContext) -> ConductorSta
                     from candidate_profile.concurrency import CandidateProfilePatch, merge_candidate_profile
                     from candidate_profile.models import HistoryRef
                     from datetime import datetime, timezone
+                    usher_status = auto_data.get("fields_submitted", {}).get("usher_status", "submitted")
                     history_ref = HistoryRef(
                         run_id=auto_data.get("submission_id") or f"usher_{state.job_id[:8]}",
                         component="usher",
                         timestamp=datetime.now(timezone.utc),
-                        outcome="submitted",
+                        outcome=usher_status.lower() if usher_status else "submitted",
                         score=1.0,
                         detail_ref=f"applications/{state.job_id}",
                     )

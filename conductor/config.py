@@ -82,10 +82,14 @@ class ConductorConfig:
         self.DRY_RUN: bool = os.getenv("DRY_RUN", "true").lower() in ("true", "1", "yes")
         self.EMAIL_METHOD: str = os.getenv("EMAIL_METHOD", "gmail_api")  # "gmail_api" or "smtp"
 
-        # PDF Auto-Apply Adapter (#5)
+        # PDF Auto-Apply Adapter (#5 / Usher #7)
         self.PDF_OUTPUT_DIR: str = os.getenv(
             "PDF_OUTPUT_DIR",
             str(Path(__file__).resolve().parent.parent / "data" / "pdf_resumes"),
+        )
+        self.USHER_DIR: str = os.getenv(
+            "USHER_DIR",
+            str(Path(__file__).resolve().parent.parent.parent / "PDF Auto Apply Agent"),
         )
         self.DEFAULT_CHANNEL: str = os.getenv("DEFAULT_CHANNEL", "auto")  # "auto" | "email" | "form"
 
