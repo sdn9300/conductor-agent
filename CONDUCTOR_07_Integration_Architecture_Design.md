@@ -34,7 +34,7 @@ Not all three integrations rest on the same quality of evidence. Stated plainly 
 For reference, unchanged by this design:
 
 ```
-Harvester → Dedup → Cooldown → Research Agent → AlignResume → Human Approval Gate
+Gleaner → Dedup → Cooldown → Research Agent → AlignResume → Human Approval Gate
    → Dynamic Channel Routing → (Overture | PDF Auto-Apply) → MemoryStore checkpoint → Prometheus
 ```
 
@@ -78,7 +78,7 @@ class ConductorState(TypedDict):
   - `align_resume.py` → `to_resume_profile(profile)`
   - `research.py` → `to_research_scope(profile)`
   - `auto_apply.py` → `to_application_view(profile)` and/or `to_usher_profile(profile)` (both exist — §4.3 needs to confirm which Usher actually expects)
-  - `harvester.py` → `to_gleaner_query(profile)` for search-criteria-driven discovery, if applicable
+  - `gleaner.py` → `to_gleaner_query(profile)` for search-criteria-driven discovery, if applicable
 - **Writes:** per the package's own ownership map, each node emits a `CandidateProfilePatch` for its owned section only — AlignResume → `tailoring_history`, Overture → `outreach_history`, Usher → `application_history`, Sentiment Classifier → `interaction_signals`, Conductor itself → `profile_metadata`. The `merge_candidate_profile` reducer handles the merge; nodes don't need to read-modify-write the whole profile.
 - **Anti-fabrication hook:** `check_skill_provenance(candidate_id, skill_name)` is a natural fit for AlignResume's tailoring step, immediately before any resume bullet claims a skill — reject or flag any generated bullet whose skill claim doesn't resolve to a verified provenance record. This is the same guardrail philosophy already used in AlignResume standalone (deterministic hallucination guardrail) — worth wiring through rather than leaving the two guardrails disconnected.
 - **Telemetry consolidation:** the package's five Prometheus metrics (`candidate_profile_writes_total`, `_validation_failures_total`, `_schema_version_gauge`, `_write_latency_seconds`, `_ownership_violations_total`) can register against Conductor's existing Prometheus registry if run in-process (Option 1 above makes this straightforward), landing on the same Grafana dashboard already built for Conductor rather than requiring a second one.
@@ -113,7 +113,7 @@ This keeps every call site in `conductor/graph/nodes.py` unchanged — they alre
 
 | Conductor adapter | Event to emit | Adapter function |
 |---|---|---|
-| `harvester.py` | `JOB_DISCOVERED` | `from_harvester_event()` — confirmed |
+| `gleaner.py` | `JOB_DISCOVERED` | `from_harvester_event()` — confirmed |
 | `align_resume.py` | `RESUME_TAILORED` | Not confirmed to exist yet — verify in Phase 0 |
 | `overture.py` | `OUTREACH_SENT` | Not confirmed to exist yet — verify in Phase 0 |
 | `auto_apply.py` | `APPLICATION_SUBMITTED` | Not confirmed to exist yet — verify in Phase 0 |
@@ -135,7 +135,7 @@ Given the confidence gap in §1, this section proposes an integration *shape* co
 ## 5. Updated Tier-1 Execution Loop
 
 ```
-[Harvester] ──► JOB_DISCOVERED (Memory Module)
+[Gleaner] ──► JOB_DISCOVERED (Memory Module)
      │
      ▼
 [Dedup Check] ──(via Memory Module query, §4.2 gap)──► skip if duplicate
@@ -185,7 +185,7 @@ Supersedes the table in Conductor's current README once implemented:
 
 | Component | Role | Integration Mechanism |
 |---|---|---|
-| #1 Harvester | Job Discovery | `HarvesterAdapter` (unchanged) |
+| #1 Gleaner | Job Discovery | `HarvesterAdapter` (unchanged) |
 | #2 AlignResume | Resume Tailoring | `AlignResumeAdapter` + `to_resume_profile()` + `check_skill_provenance()` |
 | #3 Overture | Cold Outreach | `OvertureAdapter` + `to_outreach_context()` |
 | #4 Research Agent | Company Intelligence | `ResearchAgentAdapter` + `to_research_scope()` |

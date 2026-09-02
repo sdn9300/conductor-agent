@@ -93,7 +93,7 @@ class CandidateProfileAdapter:
         return to_resume_profile(profile)
 
     def get_gleaner_query(self, profile: CandidateProfile) -> GleanerQuery:
-        """Project onto Harvester/Gleaner discovery query (#1)."""
+        """Project onto Gleaner/Gleaner discovery query (#1)."""
         return to_gleaner_query(profile)
 
     def get_outreach_context(self, profile: CandidateProfile) -> OutreachContext:

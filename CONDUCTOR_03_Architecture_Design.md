@@ -31,7 +31,7 @@
               │  │              └─────┬─────┘              │  │
               │  │                    │                     │  │
         ┌─────▼──┴───┐        ┌───────▼───────┐      ┌──────┴──▼─────┐
-        │  Harvester  │        │  Sentiment    │      │   AlignResume  │
+        │  Gleaner  │        │  Sentiment    │      │   AlignResume  │
         │    (#1)     │        │  Classifier   │      │      (#2)      │
         └─────────────┘        │    (#9)       │      └───────┬────────┘
                                 └───────▲───────┘              │
@@ -62,7 +62,7 @@ Research Agent (#4) and PDF Auto-Apply Agent (#7) are omitted from this diagram 
   "applications": [
     {
       "job_id": "uuid",
-      "source": "harvester | manual",
+      "source": "gleaner | manual",
       "posting_ref": { "company": "", "title": "", "jd_text_ref": "" },
       "status": "discovered | tailored | outreach_pending_review | outreach_sent | responded | closed",
       "tailored_resume_ref": "align-resume/run-id",
@@ -82,7 +82,7 @@ The per-run object passed between graph nodes. A thin wrapper around one `applic
 
 ### 3.3 AgentAdapter Interface
 
-Every sibling component Conductor calls is wrapped behind the same contract, deliberately reusing the **abstract adapter pattern already established in Harvester's own architecture** for its four job-board scrapers — the same shape now applied one level up, to whole agents rather than data sources:
+Every sibling component Conductor calls is wrapped behind the same contract, deliberately reusing the **abstract adapter pattern already established in Gleaner's own architecture** for its four job-board scrapers — the same shape now applied one level up, to whole agents rather than data sources:
 
 ```
 AgentAdapter:
@@ -98,14 +98,14 @@ AgentResult:
 
 Concretely: `HarvesterAdapter`, `AlignResumeAdapter`, `OvertureAdapter`, `SentimentClassifierAdapter`. Each translates Conductor's generic call into whatever that specific agent actually needs (a Python function call for same-repo agents, an HTTP call for AlignResume's Vercel deployment).
 
-## 4. Graph Topology (v1 — AlignResume + Overture, Harvester stubbed)
+## 4. Graph Topology (v1 — AlignResume + Overture, Gleaner stubbed)
 
 ```
 [Entry] → Load State
              │
              ▼
       ┌─────────────┐   no seed job available   ┌─────┐
-      │  Harvester   ├───────────────────────────►│ End │
+      │  Gleaner   ├───────────────────────────►│ End │
       │  (or stub)   │                             └─────┘
       └──────┬───────┘
              │ posting available
@@ -129,13 +129,13 @@ Concretely: `HarvesterAdapter`, `AlignResumeAdapter`, `OvertureAdapter`, `Sentim
 
 ## 5. Architecture Decision Records
 
-### ADR-1: Resolving the AlignResume / Harvester Ordering
+### ADR-1: Resolving the AlignResume / Gleaner Ordering
 
-**Context:** The candidate's own answer correctly flagged that resume-tailoring and job-discovery order "sometimes" invert. Investigating why: AlignResume needs a specific job description to tailor against, which only Harvester (or a manual substitute) can supply. The two are not actually interchangeable within a single job's processing — the apparent flexibility comes from conflating two different kinds of tailoring pass.
+**Context:** The candidate's own answer correctly flagged that resume-tailoring and job-discovery order "sometimes" invert. Investigating why: AlignResume needs a specific job description to tailor against, which only Gleaner (or a manual substitute) can supply. The two are not actually interchangeable within a single job's processing — the apparent flexibility comes from conflating two different kinds of tailoring pass.
 
 **Decision:** Split into two tiers.
 - **Tier 0 — Baseline pass** (order-flexible, runs independently, low frequency): AlignResume periodically re-optimizes the master resume against a general target-role profile, with no specific JD. This can run before, after, or independent of any discovery activity.
-- **Tier 1 — Per-job loop** (strict order, runs per opportunity): Harvester (or a manually supplied posting) → AlignResume (tailor against that specific JD) → Overture (send). Order is fixed here because the dependency is real.
+- **Tier 1 — Per-job loop** (strict order, runs per opportunity): Gleaner (or a manually supplied posting) → AlignResume (tailor against that specific JD) → Overture (send). Order is fixed here because the dependency is real.
 
 **Status:** Accepted. This preserves the candidate's original observation as correct for Tier 0 while resolving the real constraint in Tier 1.
 
@@ -149,7 +149,7 @@ Concretely: `HarvesterAdapter`, `AlignResumeAdapter`, `OvertureAdapter`, `Sentim
 
 ### ADR-3: Cross-Stack Agent Invocation via MCP
 
-**Context:** Harvester and Sentiment Classifier are same-repo Python and can be called as native LangGraph tool nodes. AlignResume is a separate Next.js/Vercel deployment.
+**Context:** Gleaner and Sentiment Classifier are same-repo Python and can be called as native LangGraph tool nodes. AlignResume is a separate Next.js/Vercel deployment.
 
 **Decision:** Same-repo Python agents are invoked as direct LangGraph tool nodes. Cross-stack agents (starting with AlignResume) are wrapped behind a small MCP server exposing a `tailor_resume(jd, resume_ref)` tool. This is not new scope invented for Conductor — it is exactly the "custom MCP server exposing [an agent] as a callable tool" checkpoint already named in the umbrella Mission Plan's Stage 03 curriculum. One build satisfies both.
 
@@ -186,6 +186,6 @@ Concretely: `HarvesterAdapter`, `AlignResumeAdapter`, `OvertureAdapter`, `Sentim
 
 ## 7. Trade-offs Worth Revisiting as the System Grows
 
-- Tier 0/Tier 1 split (ADR-1) adds a small amount of coordination complexity now, in exchange for correctness; revisit if Harvester's real throughput makes Tier 0 unnecessary.
+- Tier 0/Tier 1 split (ADR-1) adds a small amount of coordination complexity now, in exchange for correctness; revisit if Gleaner's real throughput makes Tier 0 unnecessary.
 - The local `MemoryStore` (ADR-2) will need a real migration path once Memory Module ships — worth designing the interface with that migration in mind from day one, not as an afterthought.
 - MCP wrapping (ADR-3) adds a network hop for AlignResume calls; acceptable at current scale, worth profiling once volume increases.

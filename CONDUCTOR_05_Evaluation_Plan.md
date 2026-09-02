@@ -25,7 +25,7 @@ These gate a phase transition in CND-IMPL. Failure here means the phase is not d
 | Schema validation | Every write to the Candidate Profile JSON validates against the v0.1 schema (CND-ARCH §3.1) before persisting; invalid writes are rejected and logged, not silently coerced |
 | Human gate enforcement | Overture's send adapter cannot be reached by the graph without first passing through the approval node (ADR-6) — verified by a test that attempts to bypass the gate and confirms it is structurally impossible, not just discouraged |
 | Graceful degradation | A failure in any single `AgentAdapter` (simulated) does not crash the graph process; the run halts at a resumable checkpoint with a logged reason |
-| MVP orchestration proof | At least two of AlignResume, Harvester, Overture are demonstrably chained end-to-end on a real or realistic posting, per CND-PS §8 |
+| MVP orchestration proof | At least two of AlignResume, Gleaner, Overture are demonstrably chained end-to-end on a real or realistic posting, per CND-PS §8 |
 
 ## 3. Monitoring Metrics (Tracked, Not Blocking — Tier 2)
 
@@ -41,7 +41,7 @@ These gate a phase transition in CND-IMPL. Failure here means the phase is not d
 
 Consistent with the pytest-first pattern already established for Overture:
 
-- **Unit tests per adapter** — each `AgentAdapter` tested in isolation against a mocked upstream (mocked AlignResume response, mocked Overture send confirmation, mocked Harvester posting).
+- **Unit tests per adapter** — each `AgentAdapter` tested in isolation against a mocked upstream (mocked AlignResume response, mocked Overture send confirmation, mocked Gleaner posting).
 - **Integration test for the full graph** — one staged, end-to-end run against a fixture job posting, asserting the final persisted record matches the expected shape at every intermediate status transition (`discovered → tailored → outreach_pending_review → outreach_sent`).
 - **Failure-injection tests** — deliberately fail each adapter in turn and assert ADR-4's no-silent-drop guarantee holds in every case, not just the happy path.
 

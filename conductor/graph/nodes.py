@@ -1,7 +1,7 @@
 """
 LangGraph Nodes for Conductor Agent Workflow.
 Implements the full 10-component orchestration pipeline:
-Harvester -> Deduplication/Cooldown -> Research Agent -> AlignResume -> Human Gate -> [Overture / PDF Auto-Apply] -> MemoryStore
+Gleaner -> Deduplication/Cooldown -> Research Agent -> AlignResume -> Human Gate -> [Overture / PDF Auto-Apply] -> MemoryStore
 """
 
 import time
@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Optional
 from conductor.adapters.align_resume import AlignResumeAdapter
 from conductor.adapters.auto_apply import PDFAutoApplyAdapter
 from conductor.adapters.base import AgentAdapter
-from conductor.adapters.harvester import HarvesterAdapter
+from conductor.adapters.gleaner import HarvesterAdapter
 from conductor.adapters.overture import OvertureAdapter
 from conductor.adapters.research import ResearchAgentAdapter
 from conductor.adapters.sentiment import SentimentClassifierAdapter
@@ -71,7 +71,7 @@ class NodeContext:
 
 def discover_node(state: ConductorState, context: NodeContext) -> ConductorState:
     """
-    Ingest opportunity via Harvester, validate schema, check deduplication (EC-06),
+    Ingest opportunity via Gleaner, validate schema, check deduplication (EC-06),
     and check company cooldown suppression (EC-07 / Task 3.3).
     Populates canonical CandidateProfile (#10).
     """
@@ -84,7 +84,7 @@ def discover_node(state: ConductorState, context: NodeContext) -> ConductorState
 
         res = context.harvester_adapter.invoke(state.model_dump())
         if not res.success:
-            state.record_error(res.error or "Harvester discovery failed.")
+            state.record_error(res.error or "Gleaner discovery failed.")
             conductor_node_errors_total.labels(node="discover").inc()
             return state
 

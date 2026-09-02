@@ -44,7 +44,7 @@ Conductor separates orchestration into a decoupled **Tier-0 Baseline Pass** and 
 ┌───────────────────────────────────────────────┴───────────────────────────────────────────────┐
 │ Tier-1: Per-Job Execution Loop (LangGraph StateGraph)                                          │
 │                                                                                               │
-│   [Harvester Adapter] ──► Discovers opportunities across RemoteOK, Indeed, Wellfound, Naukri  │
+│   [Gleaner Adapter] ──► Discovers opportunities across RemoteOK, Indeed, Wellfound, Naukri  │
 │            │                                                                                  │
 │            ▼                                                                                  │
 │   [Deduplication Check] ──────(Duplicate URL/Title)──────► [Bypass to Persist: skipped_dupe]  │
@@ -112,7 +112,7 @@ All lifecycle milestones, error traces, and state transitions are durably checkp
 
 | Component | Role in Architecture | Integration Mechanism |
 |---|---|---|
-| **#1 Harvester** | Multi-Board Job Discovery | `HarvesterAdapter` (RemoteOK, Indeed, Wellfound, Naukri) |
+| **#1 Gleaner** | Multi-Board Job Discovery | `HarvesterAdapter` (RemoteOK, Indeed, Wellfound, Naukri) |
 | **#2 AlignResume** | Resume Tailoring & ATS Scoring | `AlignResumeAdapter` (HTTP REST API with deterministic fallback, provenance-gated via Candidate Profile) |
 | **#3 Overture** | Cold Outreach Automation | `OvertureAdapter` (Email draft generation & Gmail/SMTP dispatch) |
 | **#4 Research Agent** | Company Intelligence Gathering | `ResearchAgentAdapter` (Synthesizes `CompanyBriefRef` tech signals & culture) |
@@ -139,7 +139,7 @@ Conductor Agent/
 │   ├── adapters/                 # Specialist Agent Adapters
 │   │   ├── __init__.py
 │   │   ├── base.py               # Abstract AgentAdapter & AgentResult contracts
-│   │   ├── harvester.py          # Harvester Multi-Board Scraper Adapter (#1)
+│   │   ├── gleaner.py          # Gleaner Multi-Board Scraper Adapter (#1)
 │   │   ├── harvester_stub.py     # Manual Seed Posting Stub Adapter
 │   │   ├── research.py           # Research Agent Company Intelligence Adapter (#4)
 │   │   ├── align_resume.py       # AlignResume Tailoring & ATS Gap Adapter (#2)
@@ -337,7 +337,7 @@ kubectl apply -f deploy/k8s/conductor-cronjob.yaml
 ## 🧪 Testing & Quality Assurance
 
 Conductor is tested with a rigorous `pytest` test suite covering:
-- **Specialist Adapters** (Harvester, Research Agent, AlignResume, Overture, Auto-Apply, Sentiment Classifier)
+- **Specialist Adapters** (Gleaner, Research Agent, AlignResume, Overture, Auto-Apply, Sentiment Classifier)
 - **LangGraph State Transitions & Dynamic Routing**
 - **Deduplication Engine & Feedback Loop Cooldowns**
 - **Human Gate Structural Bypass Prevention**

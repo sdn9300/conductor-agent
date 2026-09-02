@@ -43,7 +43,7 @@ Per CONDUCTOR_07 §1, two of the three integrations rest on README-level confide
 | 1.2 | Write `conductor/storage/event_sourced_store.py` implementing Conductor's `MemoryStore` interface (per IG-4), delegating to the standalone `EventLedger` |
 | 1.3 | Add the missing adapter functions from IG-1 to `conductor-memory-module` if needed, with their own unit tests in that repo |
 | 1.4 | Add the missing query methods from IG-2 if needed |
-| 1.5 | Wire event emission into `harvester.py` (`JOB_DISCOVERED`) and `sentiment.py` (`RESPONSE_CLASSIFIED`) — these two are already fully confirmed, so do them first as the proof-of-pattern |
+| 1.5 | Wire event emission into `gleaner.py` (`JOB_DISCOVERED`) and `sentiment.py` (`RESPONSE_CLASSIFIED`) — these two are already fully confirmed, so do them first as the proof-of-pattern |
 | 1.6 | Wire event emission into `align_resume.py`, `overture.py`, `auto_apply.py` for the remaining three event types |
 | 1.7 | Swap Conductor's storage instantiation (wherever `SQLiteMemoryStore`/`JSONMemoryStore` is currently constructed) to `EventSourcedMemoryStore`, behind a config flag (`MEMORY_BACKEND=event_sourced` vs `legacy`) so this is reversible without a git revert |
 | 1.8 | Update `conductor history` and `conductor inspect` CLI commands to read from the new store |

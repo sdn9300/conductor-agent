@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Optional, List
 from uuid import uuid4
 
-from conductor.adapters.harvester import HarvesterAdapter
+from conductor.adapters.gleaner import HarvesterAdapter
 from conductor.adapters.sentiment import SentimentClassifierAdapter
 from conductor.config import config
 from conductor.graph.nodes import NodeContext, execute_tier0_baseline
@@ -127,7 +127,7 @@ def handle_run(args: argparse.Namespace) -> None:
 
 
 def handle_harvest(args: argparse.Namespace) -> None:
-    """Discover opportunities via Harvester and orchestrate them in batch."""
+    """Discover opportunities via Gleaner and orchestrate them in batch."""
     if args.dry_run is not None:
         config.DRY_RUN = args.dry_run
     if args.auto_approve:
@@ -152,9 +152,9 @@ def handle_harvest(args: argparse.Namespace) -> None:
     print(f"  Dry Run:         {config.DRY_RUN}")
     print(f"=======================================================\n")
 
-    harvester = HarvesterAdapter()
+    gleaner = HarvesterAdapter()
     print("  [1/2] Discovering postings across job boards...")
-    discovered = harvester.fetch_jobs(role=role, location=location, boards=boards, limit=limit)
+    discovered = gleaner.fetch_jobs(role=role, location=location, boards=boards, limit=limit)
     print(f"  Found {len(discovered)} opportunity listing(s).\n")
 
     if not discovered:

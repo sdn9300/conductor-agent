@@ -20,7 +20,7 @@
 
 ## Phase 1 — Two-Agent MVP (AlignResume + Overture, manually-seeded jobs)
 
-No dependency on Harvester's implementation — this phase is fully buildable today.
+No dependency on Gleaner's implementation — this phase is fully buildable today.
 
 | Task | Detail |
 |---|---|
@@ -28,7 +28,7 @@ No dependency on Harvester's implementation — this phase is fully buildable to
 | 1.2 | Confirm/build a programmatic interface to Overture's send pipeline |
 | 1.3 | Define and implement the `ConductorState` object and the minimal Candidate Profile JSON schema (CND-ARCH §3.1–3.2) |
 | 1.4 | Implement `AgentAdapter` base interface + `AlignResumeAdapter` + `OvertureAdapter` (ADR-3 for AlignResume specifically: MCP wrapper) |
-| 1.5 | Build the LangGraph topology for the Tier-1 loop with Harvester replaced by a manual-input stub node (accepts a hand-supplied JD) |
+| 1.5 | Build the LangGraph topology for the Tier-1 loop with Gleaner replaced by a manual-input stub node (accepts a hand-supplied JD) |
 | 1.6 | Implement the human-approval gate node (ADR-6) between tailoring and send |
 | 1.7 | Implement the local `MemoryStore` (ADR-2): append-only JSON or SQLite run log |
 | 1.8 | Wire minimal Prometheus metrics under the `conductor_*` namespace (ADR-5) |
@@ -37,18 +37,18 @@ No dependency on Harvester's implementation — this phase is fully buildable to
 
 ---
 
-## Phase 2 — Harvester Integration (Full Three-Agent MVP)
+## Phase 2 — Gleaner Integration (Full Three-Agent MVP)
 
-Gated on Harvester's Sprint 1 implementation landing.
+Gated on Gleaner's Sprint 1 implementation landing.
 
 | Task | Detail |
 |---|---|
-| 2.1 | Implement `HarvesterAdapter` against Harvester's already-specced 7-field canonical schema |
-| 2.2 | Replace the Phase 1 manual-input stub with the real Harvester node in the Tier-1 loop |
+| 2.1 | Implement `HarvesterAdapter` against Gleaner's already-specced 7-field canonical schema |
+| 2.2 | Replace the Phase 1 manual-input stub with the real Gleaner node in the Tier-1 loop |
 | 2.3 | Implement Tier-0 baseline pass (ADR-1) as an independently schedulable node, decoupled from the per-job loop |
-| 2.4 | Add deduplication logic at the Conductor level — skip postings Harvester has already surfaced and Conductor has already processed (cross-reference against the run log) |
+| 2.4 | Add deduplication logic at the Conductor level — skip postings Gleaner has already surfaced and Conductor has already processed (cross-reference against the run log) |
 
-**Exit criterion:** Conductor's Tier-1 loop runs unmodified from live Harvester output through to a sent (or gated) outreach, satisfying the umbrella Mission Plan's pinned MVP criterion in full — all three of AlignResume, Harvester, and Overture orchestrated end-to-end.
+**Exit criterion:** Conductor's Tier-1 loop runs unmodified from live Gleaner output through to a sent (or gated) outreach, satisfying the umbrella Mission Plan's pinned MVP criterion in full — all three of AlignResume, Gleaner, and Overture orchestrated end-to-end.
 
 ---
 
@@ -71,7 +71,7 @@ Gated on Sentiment Classifier clearing its own Phase 1 labeled-dataset gate.
 
 | Task | Detail |
 |---|---|
-| 4.1 | Implement `ResearchAgentAdapter` — inserted between Harvester and AlignResume, enriching the JD with company intelligence before tailoring |
+| 4.1 | Implement `ResearchAgentAdapter` — inserted between Gleaner and AlignResume, enriching the JD with company intelligence before tailoring |
 | 4.2 | Implement `PDFAutoApplyAdapter` — inserted as an alternative branch to Overture for postings that require an application form rather than a cold email |
 | 4.3 | Extend the graph with a routing node deciding Overture-path vs. PDF-Auto-Apply-path per posting |
 
@@ -93,4 +93,4 @@ Gated on Sentiment Classifier clearing its own Phase 1 labeled-dataset gate.
 
 ## Cross-Phase Note
 
-Phases 1 and 2 are deliberately decoupled so that Harvester's implementation timeline never blocks Conductor's own progress. This is the direct, structural fix for the avoidance pattern named in CND-MP §6 — there is no phase boundary here that requires waiting on something outside Conductor's own control before Phase 1 can start.
+Phases 1 and 2 are deliberately decoupled so that Gleaner's implementation timeline never blocks Conductor's own progress. This is the direct, structural fix for the avoidance pattern named in CND-MP §6 — there is no phase boundary here that requires waiting on something outside Conductor's own control before Phase 1 can start.

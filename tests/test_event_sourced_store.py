@@ -56,7 +56,7 @@ def test_event_sourced_store_save_and_get_application(temp_event_store):
     )
     record = ApplicationRecord(
         job_id="job_anthropic_001",
-        source="harvester",
+        source="gleaner",
         posting=posting,
         status="tailored",
         tailored_resume=tailored,
@@ -91,7 +91,7 @@ def test_event_sourced_store_deduplication(temp_event_store):
     )
     record = ApplicationRecord(
         job_id="job_deepmind_001",
-        source="harvester",
+        source="gleaner",
         posting=posting,
         status="discovered",
     )
@@ -116,7 +116,7 @@ def test_event_sourced_store_cooldown_and_sentiment_inbound(temp_event_store):
     )
     record = ApplicationRecord(
         job_id="job_venture_001",
-        source="harvester",
+        source="gleaner",
         posting=posting,
         status="outreach_sent",
     )

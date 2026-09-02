@@ -9,7 +9,7 @@
 
 ## 1. Mission Statement
 
-Orchestrate the existing specialist agents — Harvester, AlignResume, Overture, and eventually the full ten-component architecture — into one coherent, observable, fault-tolerant pipeline, so that "run a job search" becomes a single triggered workflow with a persisted, inspectable record, rather than a sequence of manually-timed, disconnected actions.
+Orchestrate the existing specialist agents — Gleaner, AlignResume, Overture, and eventually the full ten-component architecture — into one coherent, observable, fault-tolerant pipeline, so that "run a job search" becomes a single triggered workflow with a persisted, inspectable record, rather than a sequence of manually-timed, disconnected actions.
 
 ## 2. Why Conductor, Why Now
 
@@ -23,7 +23,7 @@ Granular tasks live in CND-IMPL; this section is the phase-level shape only.
 |---|---|---|
 | 0 | This specification suite | `conductor_architecture.md` (done) |
 | 1 | Two-agent MVP: AlignResume + Overture against manually-seeded jobs | AlignResume, Overture programmatic interfaces |
-| 2 | Harvester integration — full three-agent MVP | Harvester Sprint 1 implementation |
+| 2 | Gleaner integration — full three-agent MVP | Gleaner Sprint 1 implementation |
 | 3 | Sentiment Classifier + Memory Module feedback loop | Sentiment Classifier v1.0.1 dataset gate cleared; minimal Memory Module store |
 | 4 | Research Agent + PDF Auto-Apply Agent — full ten-component orchestration | Both components reaching implementation |
 | 5 | Observability and production hardening (Grafana, containerization, K8s scheduling) | DevOps roadmap Phase 7 (Kubernetes) comfort |
@@ -33,7 +33,7 @@ Granular tasks live in CND-IMPL; this section is the phase-level shape only.
 | Component | Current status | What Conductor needs from it |
 |---|---|---|
 | AlignResume | Complete, deployed | A callable tailoring interface (API or CLI), not just the web UI |
-| Harvester (Gleaner) | Full spec suite; implementation not started | A stable output schema (the canonical 7-field format already specced) |
+| Gleaner (Gleaner) | Full spec suite; implementation not started | A stable output schema (the canonical 7-field format already specced) |
 | Overture | Complete, hardened | A callable send interface with a pre-send hook for the human-approval gate (CND-EDGE, category 6) |
 | Sentiment Classifier | Implementation complete (v1.0.1); gated on labeled dataset | `ClassifiedSignal` objects as Conductor's outcome-ingestion format |
 | Memory Module | Not started | Nothing yet — Conductor defines the interface Memory Module will later implement (ADR-2, CND-ARCH) |
@@ -44,11 +44,11 @@ Granular tasks live in CND-IMPL; this section is the phase-level shape only.
 
 ## 5. Definition of Done for v1
 
-Restated from CND-PS §8: Conductor orchestrates at least two of AlignResume, Harvester, and Overture end-to-end against a real or realistic job opportunity, with a persisted, inspectable run record and zero silently dropped state. Given Harvester's current status, the honest v1 target is **AlignResume + Overture**, with Harvester's slot architecturally reserved and stubbed, not skipped.
+Restated from CND-PS §8: Conductor orchestrates at least two of AlignResume, Gleaner, and Overture end-to-end against a real or realistic job opportunity, with a persisted, inspectable run record and zero silently dropped state. Given Gleaner's current status, the honest v1 target is **AlignResume + Overture**, with Gleaner's slot architecturally reserved and stubbed, not skipped.
 
 ## 6. Risks at the Mission Level
 
-Full registers live in CND-EVAL (quality risk) and CND-EDGE (operational risk). At the mission level, the one risk worth naming here explicitly: **the same avoidance pattern that delayed Conductor for months could resurface at the phase boundary** — e.g., treating "wait for Harvester to be fully done" as a reason to delay Phase 1, when Phase 1 does not require Harvester at all. The mitigation is structural: Phase 1's exit criteria (CND-IMPL) are written to be achievable with zero Harvester involvement, so there is no legitimate-sounding reason to wait.
+Full registers live in CND-EVAL (quality risk) and CND-EDGE (operational risk). At the mission level, the one risk worth naming here explicitly: **the same avoidance pattern that delayed Conductor for months could resurface at the phase boundary** — e.g., treating "wait for Gleaner to be fully done" as a reason to delay Phase 1, when Phase 1 does not require Gleaner at all. The mitigation is structural: Phase 1's exit criteria (CND-IMPL) are written to be achievable with zero Gleaner involvement, so there is no legitimate-sounding reason to wait.
 
 ## 7. Alignment with the Agentic AI Engineering Roadmap
 

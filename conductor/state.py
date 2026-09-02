@@ -117,7 +117,7 @@ ApplicationStatus = Literal[
 class ApplicationRecord(BaseModel):
     """Lifecycle record for a single job opportunity in the Candidate Profile."""
     job_id: str = Field(default_factory=lambda: str(uuid4()))
-    source: str = "manual"  # "harvester" | "manual" | "remoteok" | ...
+    source: str = "manual"  # "gleaner" | "manual" | "remoteok" | ...
     posting: PostingRef
     status: ApplicationStatus = "discovered"
     company_brief: Optional[CompanyBriefRef] = None

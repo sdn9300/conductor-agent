@@ -1,6 +1,6 @@
 """
 Full 3-Agent Integration Test Suite (Phase 2 MVP).
-Verifies complete end-to-end orchestration across Harvester, AlignResume, and Overture.
+Verifies complete end-to-end orchestration across Gleaner, AlignResume, and Overture.
 """
 
 import os
@@ -8,7 +8,7 @@ import pytest
 import tempfile
 from pathlib import Path
 from conductor.adapters.align_resume import AlignResumeAdapter
-from conductor.adapters.harvester import HarvesterAdapter
+from conductor.adapters.gleaner import HarvesterAdapter
 from conductor.adapters.overture import OvertureAdapter
 from conductor.graph.nodes import NodeContext
 from conductor.graph.workflow import build_conductor_graph
@@ -46,7 +46,7 @@ def test_environment():
 def test_three_agent_end_to_end_orchestration(test_environment):
     """
     Execute 3-agent orchestration:
-    1. Harvester discovers/supplies job opportunity.
+    1. Gleaner discovers/supplies job opportunity.
     2. AlignResume tailors master resume against specific JD.
     3. Human Gate approves.
     4. Overture generates customized cold email & dry-run dispatches.
@@ -58,7 +58,7 @@ def test_three_agent_end_to_end_orchestration(test_environment):
     # Initialize graph
     graph = build_conductor_graph(ctx)
 
-    # 1. Fetch real or fallback postings via Harvester
+    # 1. Fetch real or fallback postings via Gleaner
     postings = ctx.harvester_adapter.fetch_jobs(role="AI Engineer", location="Remote", limit=1)
     assert len(postings) >= 1
     target_posting = postings[0]

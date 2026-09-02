@@ -1,6 +1,6 @@
 """
-Harvester Stub Adapter for Phase 1.
-Ingests manually seeded job descriptions while architecturally reserving Harvester's slot (CND-IMPL §Phase 1).
+Gleaner Stub Adapter for Phase 1.
+Ingests manually seeded job descriptions while architecturally reserving Gleaner's slot (CND-IMPL §Phase 1).
 """
 
 import time
@@ -10,7 +10,7 @@ from conductor.state import PostingRef
 
 
 class HarvesterStubAdapter(AgentAdapter):
-    """Stub adapter substituting for Harvester until Phase 2."""
+    """Stub adapter substituting for Gleaner until Phase 2."""
 
     @property
     def name(self) -> str:

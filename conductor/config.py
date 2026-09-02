@@ -50,7 +50,7 @@ class ConductorConfig:
             str(Path(__file__).resolve().parent.parent / "data" / "memory_module.db"),
         )
 
-        # Harvester Adapter (Job Scraping #1)
+        # Gleaner Adapter (Job Scraping #1)
         self.HARVESTER_DIR: str = os.getenv(
             "HARVESTER_DIR",
             str(Path(__file__).resolve().parent.parent.parent / "Job Scraping"),

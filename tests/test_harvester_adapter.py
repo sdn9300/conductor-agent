@@ -4,14 +4,14 @@ Verifies multi-board integration, 7-field canonical schema translation, and grac
 """
 
 import pytest
-from conductor.adapters.harvester import HarvesterAdapter
+from conductor.adapters.gleaner import HarvesterAdapter
 from conductor.state import ApplicationRecord, ConductorState, PostingRef
 
 
 def test_harvester_adapter_initialization():
     """HarvesterAdapter initializes with default boards and path configuration."""
     adapter = HarvesterAdapter()
-    assert adapter.name == "harvester"
+    assert adapter.name == "gleaner"
     assert len(adapter.default_boards) >= 1
     assert adapter.health_check() is True
 

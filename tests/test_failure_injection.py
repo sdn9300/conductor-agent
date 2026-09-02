@@ -50,13 +50,13 @@ def base_state():
 
 
 def test_harvester_failure_injection(base_state):
-    """When Harvester fails, graph halts at discover, persists error, and returns without unhandled crash."""
+    """When Gleaner fails, graph halts at discover, persists error, and returns without unhandled crash."""
     temp_dir = tempfile.mkdtemp()
     try:
         db_path = Path(temp_dir) / "test_fail1.db"
         store = SQLiteMemoryStore(str(db_path))
         ctx = NodeContext(
-            harvester_adapter=FailingAdapter("harvester_stub", "Simulated Harvester timeout"),
+            harvester_adapter=FailingAdapter("harvester_stub", "Simulated Gleaner timeout"),
             memory_store=store,
             human_gate_callback=lambda s: "approve",
         )
@@ -66,7 +66,7 @@ def test_harvester_failure_injection(base_state):
         final_state = res if isinstance(res, ConductorState) else ConductorState.model_validate(res)
 
         assert final_state.application.status == "error"
-        assert any("Harvester" in e for e in final_state.errors)
+        assert any("Gleaner" in e for e in final_state.errors)
         assert "tailor" not in final_state.node_trace
         assert "persist" in final_state.node_trace
 
